@@ -21,6 +21,41 @@
                 context.SaveChanges();
             }
 
+            if (!context.Account.Any())
+            {
+                var accountVictor = context.Clients.FirstOrDefault(c => c.Email == "victor@gmail.com");
+                if (accountVictor != null)
+                {
+                    var accounts = new Account[]
+                    {
+                        new Account {ClientId = accountVictor.Id, CreationDate = DateTime.Now, Number = "VIN001", Balance = 0 },
+                        new Account {ClientId = accountVictor.Id, CreationDate = DateTime.Today.AddDays(1), Number = "VIN002", Balance = 100 },
+
+                    };
+                    foreach (Account account in accounts)
+                    {
+                        context.Account.Add(account);
+                    }
+                    context.SaveChanges();
+
+                }
+
+                var accountMartin = context.Clients.FirstOrDefault(c => c.Email == "martin@gmail.com");
+                if (accountMartin != null)
+                {
+                    var accounts = new Account[]
+                    {
+                        new Account {ClientId = accountMartin.Id, CreationDate = DateTime.Today, Number = "VIN003", Balance = 200 }
+                    };
+                    foreach (Account account in accounts)
+                    {
+                        context.Account.Add(account);
+                    }
+                    context.SaveChanges();
+
+                }
+            }
+
         }
     }
 }
