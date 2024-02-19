@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeBankingMinHub", "HomeBankingMinHub\HomeBankingMinHub.csproj", "{94B17C51-4C2C-4CFB-82C7-20D34FD755EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeBankingMindHub", "HomeBankingMinHub\HomeBankingMindHub.csproj", "{94B17C51-4C2C-4CFB-82C7-20D34FD755EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
