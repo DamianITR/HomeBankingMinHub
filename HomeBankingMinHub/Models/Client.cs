@@ -1,4 +1,6 @@
-﻿namespace HomeBankingMinHub.Models
+﻿using HomeBankingMindHub.Models;
+
+namespace HomeBankingMinHub.Models
 {
     public class Client
     {
@@ -13,5 +15,7 @@
         public string Password { get; set; }
 
         public ICollection<Account> Accounts { get; set; }
+
+        public ICollection<ClientLoan> ClientLoans { get; set; }
     }
 }
