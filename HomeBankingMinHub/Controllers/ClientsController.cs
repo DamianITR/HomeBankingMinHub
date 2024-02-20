@@ -3,6 +3,7 @@ using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using HomeBankingMindHub.Models.DTOs;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -38,6 +39,14 @@ namespace HomeBankingMinHub.Controllers
                             Balance = ac.Balance,
                             CreationDate = ac.CreationDate,
                             Number = ac.Number
+                        }).ToList(),
+                        Loans = client.ClientLoans.Select(cl => new ClientLoanDTO
+                        {
+                            Id = cl.Id,
+                            LoanId = cl.LoanId,
+                            Name = cl.Loan.Name,
+                            Amount = cl.Amount,
+                            Payments = int.Parse(cl.Payments)
                         }).ToList()
                     };
 
@@ -76,6 +85,14 @@ namespace HomeBankingMinHub.Controllers
                         Balance = ac.Balance,
                         CreationDate = ac.CreationDate,
                         Number = ac.Number
+                    }).ToList(),
+                    Loans = client.ClientLoans.Select(cl => new ClientLoanDTO
+                    {
+                        Id = cl.Id,
+                        LoanId = cl.LoanId,
+                        Name = cl.Loan.Name,
+                        Amount = cl.Amount,
+                        Payments = int.Parse(cl.Payments)
                     }).ToList()
                 };
 

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using HomeBankingMindHub.Models.DTOs;
+using System.Text.Json.Serialization;
 
 namespace HomeBankingMinHub.Models.DTOs
 {
@@ -15,5 +16,7 @@ namespace HomeBankingMinHub.Models.DTOs
         public string Email { get; set; }
 
         public ICollection<AccountDTO> Accounts { get; set; }
+
+        public ICollection<ClientLoanDTO> Loans { get; set; }
     }
 }

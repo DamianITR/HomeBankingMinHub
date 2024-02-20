@@ -176,7 +176,7 @@ namespace HomeBankingMinHub.Models
                     {
                         var clientLoan1 = new ClientLoan
                         {
-                            Amount = 1000000,
+                            Amount = 111000,
                             ClientId = client2.Id,
                             LoanId = loan1.Id,
                             Payments = "48"
@@ -189,7 +189,7 @@ namespace HomeBankingMinHub.Models
                     {
                         var clientLoan2 = new ClientLoan
                         {
-                            Amount = 555000,
+                            Amount = 255000,
                             ClientId = client2.Id,
                             LoanId = loan2.Id,
                             Payments = "24"
