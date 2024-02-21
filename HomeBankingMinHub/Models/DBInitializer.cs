@@ -232,6 +232,26 @@ namespace HomeBankingMinHub.Models
                             FromDate= DateTime.Now,
                             ThruDate= DateTime.Now.AddYears(5),
                         },
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.DEBIT,
+                            Color = CardColor.GOLD,
+                            Number = "1234-5678-9012-3456",
+                            Cvv = 997,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(1),
+                        },
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.TITANIUM,
+                            Number = "7878-8888-777-4949",
+                            Cvv = 998,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(1),
+                        }
                     };
 
                     foreach (Card card in cards)
@@ -276,6 +296,16 @@ namespace HomeBankingMinHub.Models
                             Cvv = 456,
                             FromDate= DateTime.Now,
                             ThruDate= DateTime.Now.AddYears(7),
+                        },
+                        new Card {
+                            ClientId= client2.Id,
+                            CardHolder = client2.FirstName + " " + client2.LastName,
+                            Type = CardType.DEBIT,
+                            Color = CardColor.SILVER,
+                            Number = "4444-4444-444-444",
+                            Cvv = 790,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(2),
                         }
                     };
 
