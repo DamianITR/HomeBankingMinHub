@@ -202,6 +202,91 @@ namespace HomeBankingMinHub.Models
                 }
             }
 
+            //TARJETAS
+            if (!context.Cards.Any())
+            {
+                //buscamos al cliente
+                var client1 = context.Clients.FirstOrDefault(c => c.Email == "martin@gmail.com");
+                if (client1 != null)
+                {
+                    //le agregamos 2 tarjetas de crédito una GOLD y una TITANIUM, de tipo DEBITO Y CREDITO RESPECTIVAMENTE
+                    var cards = new Card[]
+                    {
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.DEBIT,
+                            Color = CardColor.GOLD,
+                            Number = "3325-6745-7876-4445",
+                            Cvv = 990,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(4),
+                        },
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.TITANIUM,
+                            Number = "2234-6745-552-7888",
+                            Cvv = 750,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(5),
+                        },
+                    };
+
+                    foreach (Card card in cards)
+                    {
+                        context.Cards.Add(card);
+                    }
+                    context.SaveChanges();
+                }
+
+                //buscamos al cliente
+                var client2 = context.Clients.FirstOrDefault(c => c.Email == "victor@gmail.com");
+                if (client2 != null)
+                {
+                    var cards = new Card[]
+                    {
+                        new Card {
+                            ClientId= client2.Id,
+                            CardHolder = client2.FirstName + " " + client2.LastName,
+                            Type = CardType.DEBIT,
+                            Color = CardColor.GOLD,
+                            Number = "1111-1111-1111-1111",
+                            Cvv = 123,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(2),
+                        },
+                        new Card {
+                            ClientId= client2.Id,
+                            CardHolder = client2.FirstName + " " + client2.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.SILVER,
+                            Number = "2222-2222-222-2222",
+                            Cvv = 321,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(1),
+                        },
+                        new Card {
+                            ClientId= client2.Id,
+                            CardHolder = client2.FirstName + " " + client2.LastName,
+                            Type = CardType.DEBIT,
+                            Color = CardColor.SILVER,
+                            Number = "3332-2333-333-2333",
+                            Cvv = 456,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(7),
+                        }
+                    };
+
+                    foreach (Card card in cards)
+                    {
+                        context.Cards.Add(card);
+                    }
+                    context.SaveChanges();
+                }
+            }
+
 
 
         }
