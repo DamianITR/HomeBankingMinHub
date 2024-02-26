@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Text;
+using System;
+using HomeBankingMindHub.Models;
+using HomeBankingMindHub.Models.DTOs;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -19,17 +24,25 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Client client)
+        public async Task<IActionResult> Login([FromBody] ClientLoginDTO client)
         {
             try
             {
+                //encripto la password para chequear lo que me viene del login con lo que esta guardado en la base de datos
+                String clientPasswordHashed = Encryptor.EncryptPassword(client);
+
                 Client user = _clientRepository.FindByEmail(client.Email);
-                if (user == null || !String.Equals(user.Password, client.Password))
+                if (user == null || !String.Equals(user.Password, clientPasswordHashed))
                     return Unauthorized();
 
-                var claims = new List<Claim>
+                var claims = new List<Claim>();
+
+                if (client.Email.Contains("@itr.com"))
                 {
-                    new Claim("Client", user.Email),
+                    claims.Add(new Claim("Admin", user.Email));
+                } else
+                {
+                    claims.Add(new Claim("Client", user.Email));
                 };
 
                 var claimsIdentity = new ClaimsIdentity(

@@ -23,18 +23,20 @@ x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Autenticación
+//Autenticacion
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
       .AddCookie(options =>
       {
+          options.Cookie.Name = ".HomeBanking.Cookie";
           options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
           options.LoginPath = new PathString("/index.html");
       });
 
-//Autorización
+//Autorizacion
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ClientOnly", policy => policy.RequireClaim("Client"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Admin"));
 });
 
 var app = builder.Build();

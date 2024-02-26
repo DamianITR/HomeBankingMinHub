@@ -3,6 +3,7 @@ using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -18,6 +19,7 @@ namespace HomeBankingMinHub.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Get()
         {
             try
@@ -55,15 +57,23 @@ namespace HomeBankingMinHub.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult Get(long id)
         {
             try
             {
                 Account account = _accountRepository.FindById(id);
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
 
                 if (account == null)
                 {
                     return Forbid();
+                }
+
+                //verifico si el email asociado a la cuenta es igual al email que esta guardado en la cookie
+                if (!email.Equals(account.Client.Email))
+                {
+                    return Unauthorized();
                 }
 
                 var newAccountDTO = new AccountDTO

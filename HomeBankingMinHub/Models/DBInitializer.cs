@@ -1,4 +1,5 @@
 ﻿using HomeBankingMindHub.Models;
+using HomeBankingMindHub.Models.Emuns;
 
 namespace HomeBankingMinHub.Models
 {

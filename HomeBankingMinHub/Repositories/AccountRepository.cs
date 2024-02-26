@@ -12,6 +12,7 @@ namespace HomeBankingMinHub.Repositories
         {
             return FindByCondition(account => account.Id == id)
                 .Include(account => account.Transactions)
+                .Include(client => client.Client)
                 .FirstOrDefault();
         }
 

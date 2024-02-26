@@ -4,6 +4,11 @@ using HomeBankingMinHub.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using HomeBankingMindHub.Models.DTOs;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Text;
+using HomeBankingMindHub.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -18,6 +23,7 @@ namespace HomeBankingMinHub.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Get()
         {
             try
@@ -73,7 +79,7 @@ namespace HomeBankingMinHub.Controllers
         }
 
         [HttpGet("{id}")]
-
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Get(long id)
         {
             try
@@ -127,6 +133,7 @@ namespace HomeBankingMinHub.Controllers
         }
 
         [HttpGet("current")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult GetCurrent()
         {
             try
@@ -192,8 +199,29 @@ namespace HomeBankingMinHub.Controllers
             try
             {
                 //validamos datos antes
-                if (String.IsNullOrEmpty(client.Email) || String.IsNullOrEmpty(client.Password) || String.IsNullOrEmpty(client.FirstName) || String.IsNullOrEmpty(client.LastName))
-                    return StatusCode(403, "datos inválidos");
+                // Email
+                if (String.IsNullOrEmpty(client.Email))
+                {
+                    return StatusCode(403, "El correo electrónico no puede estar vacío.");
+                }
+
+                // Contraseña
+                if (String.IsNullOrEmpty(client.Password))
+                {
+                    return StatusCode(403, "La contraseña no puede estar vacía.");
+                }
+
+                // Nombre
+                if (String.IsNullOrEmpty(client.FirstName))
+                {
+                    return StatusCode(403, "El nombre no puede estar vacío.");
+                }
+
+                // Apellido
+                if (String.IsNullOrEmpty(client.LastName))
+                {
+                    return StatusCode(403, "El apellido no puede estar vacío.");
+                }
 
                 //buscamos si ya existe el usuario
                 Client user = _clientRepository.FindByEmail(client.Email);
@@ -203,10 +231,13 @@ namespace HomeBankingMinHub.Controllers
                     return StatusCode(403, "Email está en uso");
                 }
 
+                //encripto la password
+                String clientPasswordHashed = Encryptor.EncryptPassword(client);
+
                 Client newClient = new Client
                 {
                     Email = client.Email,
-                    Password = client.Password,
+                    Password = clientPasswordHashed,
                     FirstName = client.FirstName,
                     LastName = client.LastName,
                 };
