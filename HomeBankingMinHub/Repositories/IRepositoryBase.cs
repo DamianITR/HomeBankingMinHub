@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
-using System.Linq;
-using System;
 
 namespace HomeBankingMinHub.Repositories
 {

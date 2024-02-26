@@ -32,7 +32,7 @@ namespace HomeBankingMinHub.Repositories
         {
             Create(client);
             SaveChanges();
-        } 
+        }
         public Client FindByEmail(string email)
         {
             return FindByCondition(client => client.Email.ToUpper() == email.ToUpper())

@@ -1,6 +1,4 @@
-﻿using HomeBankingMindHub.Models.DTOs;
-using HomeBankingMinHub.Models;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Text;
 
 namespace HomeBankingMindHub.Models

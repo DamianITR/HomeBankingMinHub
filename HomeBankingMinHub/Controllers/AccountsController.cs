@@ -1,9 +1,8 @@
-﻿using HomeBankingMinHub.Models.DTOs;
-using HomeBankingMinHub.Models;
+﻿using HomeBankingMinHub.Models;
+using HomeBankingMinHub.Models.DTOs;
 using HomeBankingMinHub.Repositories;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -14,7 +13,7 @@ namespace HomeBankingMinHub.Controllers
         private IAccountRepository _accountRepository;
 
         public AccountsController(IAccountRepository accountRepository)
-        { 
+        {
             _accountRepository = accountRepository;
         }
 
