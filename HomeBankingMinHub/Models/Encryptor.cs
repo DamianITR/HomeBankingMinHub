@@ -7,12 +7,12 @@ namespace HomeBankingMindHub.Models
 {
     public static class Encryptor
     {
-        public static string EncryptPassword(Client client)
+        public static string EncryptPassword(string password)
         {
             string blackBox = "laClaveSecreta";
             byte[] salt = Encoding.UTF8.GetBytes(blackBox);
             string clientPasswordHashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-            password: client.Password,
+            password: password,
             salt: salt,
             prf: KeyDerivationPrf.HMACSHA256,
             iterationCount: 100000,
@@ -20,17 +20,5 @@ namespace HomeBankingMindHub.Models
             return clientPasswordHashed;
         }
 
-        public static string EncryptPassword(ClientLoginDTO client)
-        {
-            string blackBox = "laClaveSecreta";
-            byte[] salt = Encoding.UTF8.GetBytes(blackBox);
-            string clientPasswordHashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-            password: client.Password,
-            salt: salt,
-            prf: KeyDerivationPrf.HMACSHA256,
-            iterationCount: 100000,
-            numBytesRequested: 256 / 8));
-            return clientPasswordHashed;
-        }
     }
 }

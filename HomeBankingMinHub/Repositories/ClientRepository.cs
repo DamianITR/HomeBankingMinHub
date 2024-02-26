@@ -42,5 +42,10 @@ namespace HomeBankingMinHub.Repositories
             .Include(client => client.Cards)
             .FirstOrDefault();
         }
+
+        public Boolean ExistByEmail(string email)
+        {
+            return FindByCondition(client => client.Email.Equals(email)).Any();
+        }
     }
 }

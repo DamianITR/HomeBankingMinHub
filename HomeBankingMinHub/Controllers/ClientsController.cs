@@ -224,15 +224,15 @@ namespace HomeBankingMinHub.Controllers
                 }
 
                 //buscamos si ya existe el usuario
-                Client user = _clientRepository.FindByEmail(client.Email);
+                //Client user = _clientRepository.FindByEmail(client.Email);
 
-                if (user != null)
+                if (_clientRepository.ExistByEmail(client.Email))
                 {
                     return StatusCode(403, "Email está en uso");
                 }
 
                 //encripto la password
-                String clientPasswordHashed = Encryptor.EncryptPassword(client);
+                String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
 
                 Client newClient = new Client
                 {

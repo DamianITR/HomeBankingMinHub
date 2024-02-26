@@ -29,20 +29,15 @@ namespace HomeBankingMindHub.Controllers
             try
             {
                 //encripto la password para chequear lo que me viene del login con lo que esta guardado en la base de datos
-                String clientPasswordHashed = Encryptor.EncryptPassword(client);
+                String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
 
                 Client user = _clientRepository.FindByEmail(client.Email);
                 if (user == null || !String.Equals(user.Password, clientPasswordHashed))
                     return Unauthorized();
 
-                var claims = new List<Claim>();
-
-                if (client.Email.Contains("@itr.com"))
+                var claims = new List<Claim>
                 {
-                    claims.Add(new Claim("Admin", user.Email));
-                } else
-                {
-                    claims.Add(new Claim("Client", user.Email));
+                    new Claim(user.Email.Contains("@itr.com") ? "Admin" : "Client", user.Email)
                 };
 
                 var claimsIdentity = new ClaimsIdentity(

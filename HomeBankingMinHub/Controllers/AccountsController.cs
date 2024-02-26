@@ -62,18 +62,14 @@ namespace HomeBankingMinHub.Controllers
         {
             try
             {
-                Account account = _accountRepository.FindById(id);
                 string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+
+                //busco la cuenta por id y el email que tengo en la cookie
+                Account account = _accountRepository.FindByIdAndClientEmail(id, email);
 
                 if (account == null)
                 {
                     return Forbid();
-                }
-
-                //verifico si el email asociado a la cuenta es igual al email que esta guardado en la cookie
-                if (!email.Equals(account.Client.Email))
-                {
-                    return Unauthorized();
                 }
 
                 var newAccountDTO = new AccountDTO
