@@ -1,4 +1,7 @@
-﻿using HomeBankingMindHub.Models.DTOs;
+﻿using HomeBankingMindHub.Models;
+using HomeBankingMindHub.Models.DTOs;
+using HomeBankingMindHub.Models.Emuns;
+using HomeBankingMindHub.Repositories;
 using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
@@ -14,10 +17,12 @@ namespace HomeBankingMinHub.Controllers
     {
         private IClientRepository _clientRepository;
         private IAccountRepository _accountRepository;
-        public ClientsController(IClientRepository clientRepository, IAccountRepository accountRepository)
+        private ICardRepository _cardRepository;
+        public ClientsController(IClientRepository clientRepository, IAccountRepository accountRepository, ICardRepository cardRepository)
         {
             _clientRepository = clientRepository;
             _accountRepository = accountRepository;
+            _cardRepository = cardRepository;
         }
 
         [HttpGet]
@@ -336,10 +341,9 @@ namespace HomeBankingMinHub.Controllers
                 }
                 else
                 {
-                    var accounts = _accountRepository.GetAccountsByClient(client.Id);
                     var accountsDTO = new List<AccountDTO>();
 
-                    foreach (Account account in accounts)
+                    foreach (Account account in accountsClient)
                     {
                         var newAccountDTO = new AccountDTO
                         {
@@ -361,6 +365,128 @@ namespace HomeBankingMinHub.Controllers
                     }
 
                     return Ok(accountsDTO);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("current/cards")]
+        [Authorize(Policy = "ClientOnly")]
+
+        public IActionResult CreateCards([FromBody] SimpleCardDTO simplifiedCardDTO )
+        {
+            try
+            {
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email == string.Empty)
+                {
+                    return Forbid();
+                }
+
+                Client client = _clientRepository.FindByEmail(email);
+
+                if (client == null)
+                {
+                    return Forbid();
+                }
+
+                CardType cardType = (CardType)Enum.Parse(typeof(CardType), simplifiedCardDTO.Type);
+                CardColor cardColor = (CardColor)Enum.Parse(typeof(CardColor), simplifiedCardDTO.Color);
+
+
+                if (_cardRepository.ExistSpecificCard(client.Id, cardType, cardColor))
+                {
+                    return StatusCode(403, "Solamente podes tener una tarjeta de cada tipo");
+                }
+                else
+                {
+                    int lowerBound = 0;
+                    int upperBound = 10000;
+                    string newNumberCard;
+
+                    // creo un numero de tarjeta que no exista en la DB
+                    do
+                    {
+                        newNumberCard = GeneratorNumbers.Generate(lowerBound, upperBound)
+                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
+                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
+                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
+                                        ;
+                    }
+                    while (_cardRepository.ExistNumberCard(newNumberCard));
+
+                    var newCard = new Card
+                    {
+                        CardHolder = client.FirstName + " " + client.LastName,
+                        Type = cardType,
+                        Color = cardColor,
+                        Number = newNumberCard,
+                        Cvv = GeneratorNumbers.Generate(0, 1000),
+                        FromDate = DateTime.Now,
+                        ThruDate = DateTime.Now.AddYears(5),
+                        ClientId = client.Id,
+                    };
+
+                    _cardRepository.Save(newCard);
+                    return Created();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("current/cards")]
+        [Authorize(Policy = "ClientOnly")]
+
+        public IActionResult GetCurrentCards()
+        {
+            try
+            {
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email == string.Empty)
+                {
+                    return Forbid();
+                }
+
+                Client client = _clientRepository.FindByEmail(email);
+
+                if (client == null)
+                {
+                    return Forbid();
+                }
+
+                var cardsClient = _cardRepository.GetCardsByClient(client.Id);
+
+                if (cardsClient == null)
+                {
+                    return Forbid();
+                }
+                else
+                {
+                    var cardsDTOList = new List<CardDTO>();
+
+                    foreach (Card card in cardsClient)
+                    {
+                        var newCardDTO = new CardDTO
+                        {
+                            CardHolder = client.FirstName + " " + client.LastName,
+                            Type = card.Type.ToString(),
+                            Color = card.Color.ToString(),
+                            Number = card.Number,
+                            Cvv = card.Cvv,
+                            FromDate = card.FromDate,
+                            ThruDate = card.ThruDate
+                        };
+
+                        cardsDTOList.Add(newCardDTO);
+                    }
+
+                    return Ok(cardsDTOList);
                 }
             }
             catch (Exception ex)
