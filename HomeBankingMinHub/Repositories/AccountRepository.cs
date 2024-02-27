@@ -22,6 +22,19 @@ namespace HomeBankingMinHub.Repositories
                 .FirstOrDefault();
         }
 
+        public IEnumerable<Account> GetAccountsByClient(long clientId)
+        {
+            return FindByCondition(account => account.ClientId == clientId)
+            .Include(account => account.Transactions)
+            .ToList();
+        }
+
+        public int GetCountAccountsByClient(long clientId)
+        {
+            return FindByCondition(account => account.ClientId == clientId)
+                .Count();
+        }
+
         public IEnumerable<Account> GetAllAccounts()
         {
             return FindAll()
@@ -29,10 +42,17 @@ namespace HomeBankingMinHub.Repositories
                 .ToList();
         }
 
+
         public void Save(Account account)
         {
             Create(account);
             SaveChanges();
+        }
+
+        public bool ExistNumberAccount(string numberAccount)
+        {
+            return FindByCondition(account => account.Number.Equals(numberAccount))
+                .Any();
         }
     }
 }

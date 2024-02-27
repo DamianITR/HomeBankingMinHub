@@ -1,5 +1,5 @@
-﻿using HomeBankingMindHub.Models;
-using HomeBankingMindHub.Models.DTOs;
+﻿using HomeBankingMindHub.Models.DTOs;
+using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
 using HomeBankingMinHub.Repositories;
@@ -13,9 +13,11 @@ namespace HomeBankingMinHub.Controllers
     public class ClientsController : ControllerBase
     {
         private IClientRepository _clientRepository;
-        public ClientsController(IClientRepository clientRepository)
+        private IAccountRepository _accountRepository;
+        public ClientsController(IClientRepository clientRepository, IAccountRepository accountRepository)
         {
             _clientRepository = clientRepository;
+            _accountRepository = accountRepository;
         }
 
         [HttpGet]
@@ -248,6 +250,62 @@ namespace HomeBankingMinHub.Controllers
             }
         }
 
+        [HttpPost("current/accounts")]
+        [Authorize(Policy = "ClientOnly")]
+
+        public IActionResult CreateAccount()
+        {
+            try
+            {
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email == string.Empty)
+                {
+                    return Forbid();
+                }
+
+                Client client = _clientRepository.FindByEmail(email);
+
+                if (client == null)
+                {
+                    return Forbid();
+                }
+
+                var totalAccounts = _accountRepository.GetCountAccountsByClient(client.Id);
+
+                if (totalAccounts >= 3)
+                {
+                    return Forbid();
+                }
+                else
+                {
+                    int lowerBound = 0; //numero incluido
+                    int upperBound = 100000000; //numero excliudo, maximo 8 digitos para este proyecto
+                    string newNumberAccount;
+
+                    // creo un numero de cuenta que no exista en la DB
+                    do
+                    {
+                        newNumberAccount = "VIN-" + GeneratorNumbers.Generate(lowerBound, upperBound);
+                    }
+                    while (_accountRepository.ExistNumberAccount(newNumberAccount));
+
+                    var newAccount = new Account
+                    {
+                        Number = newNumberAccount,
+                        CreationDate = DateTime.Now,
+                        Balance = 0,
+                        ClientId = client.Id,
+                    };
+
+                    _accountRepository.Save(newAccount);
+                    return Created();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
 
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Text;
 
-namespace HomeBankingMindHub.Models
+namespace HomeBankingMindHub.Shared
 {
     public static class Encryptor
     {
