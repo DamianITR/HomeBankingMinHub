@@ -307,5 +307,67 @@ namespace HomeBankingMinHub.Controllers
             }
         }
 
+
+        [HttpGet("current/accounts")]
+        [Authorize(Policy = "ClientOnly")]
+
+        public IActionResult GetCurrentAccounts()
+        {
+            try
+            {
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email == string.Empty)
+                {
+                    return Forbid();
+                }
+
+                Client client = _clientRepository.FindByEmail(email);
+
+                if (client == null)
+                {
+                    return Forbid();
+                }
+
+                var accountsClient = _accountRepository.GetAccountsByClient(client.Id);
+
+                if (accountsClient == null)
+                {
+                    return Forbid();
+                }
+                else
+                {
+                    var accounts = _accountRepository.GetAccountsByClient(client.Id);
+                    var accountsDTO = new List<AccountDTO>();
+
+                    foreach (Account account in accounts)
+                    {
+                        var newAccountDTO = new AccountDTO
+                        {
+                            Id = account.Id,
+                            Number = account.Number,
+                            CreationDate = account.CreationDate,
+                            Balance = account.Balance,
+                            Transactions = account.Transactions.Select(transaction => new TransactionDTO
+                            {
+                                Id = transaction.Id,
+                                Type = transaction.Type.ToString(),
+                                Amount = transaction.Amount,
+                                Description = transaction.Description,
+                                Date = transaction.Date
+                            }).ToList()
+                        };
+
+                        accountsDTO.Add(newAccountDTO);
+                    }
+
+                    return Ok(accountsDTO);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 }

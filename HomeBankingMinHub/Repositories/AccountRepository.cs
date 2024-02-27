@@ -25,8 +25,8 @@ namespace HomeBankingMinHub.Repositories
         public IEnumerable<Account> GetAccountsByClient(long clientId)
         {
             return FindByCondition(account => account.ClientId == clientId)
-            .Include(account => account.Transactions)
-            .ToList();
+                .Include(account => account.Transactions)
+                .ToList();
         }
 
         public int GetCountAccountsByClient(long clientId)
