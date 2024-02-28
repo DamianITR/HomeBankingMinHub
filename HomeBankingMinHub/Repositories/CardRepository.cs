@@ -25,7 +25,7 @@ namespace HomeBankingMindHub.Repositories
 
         public IEnumerable<Card> GetCardsByClient(long clientId)
         {
-            return FindByCondition(client => client.Id == clientId)
+            return FindByCondition(card => card.ClientId == clientId)
                 .ToList();
         }
 

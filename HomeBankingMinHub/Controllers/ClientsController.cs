@@ -477,6 +477,7 @@ namespace HomeBankingMinHub.Controllers
                     {
                         var newCardDTO = new CardDTO
                         {
+                            Id = card.Id,
                             CardHolder = client.FirstName + " " + client.LastName,
                             Type = card.Type.ToString(),
                             Color = card.Color.ToString(),
