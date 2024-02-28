@@ -47,5 +47,11 @@ namespace HomeBankingMinHub.Repositories
         {
             return FindByCondition(client => client.Email.Equals(email)).Any();
         }
+
+        public long? GetIdClientFromEmail(string email)
+        {
+            return FindByCondition(client => client.Email.Equals(email)).Select(client => client.Id).FirstOrDefault();
+        }
+
     }
 }

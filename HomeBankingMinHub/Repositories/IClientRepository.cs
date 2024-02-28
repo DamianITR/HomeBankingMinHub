@@ -8,7 +8,7 @@ namespace HomeBankingMinHub.Repositories
         void Save(Client client);
         Client FindById(long id);
         Client FindByEmail(string email);
-
         Boolean ExistByEmail(string email);
+        long? GetIdClientFromEmail(string email);
     }
 }

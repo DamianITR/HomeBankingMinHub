@@ -238,6 +238,7 @@ namespace HomeBankingMinHub.Controllers
                 //encripto la password
                 String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
 
+                //se crea el cliente nuevo
                 Client newClient = new Client
                 {
                     Email = client.Email,
@@ -246,8 +247,42 @@ namespace HomeBankingMinHub.Controllers
                     LastName = client.LastName,
                 };
 
+                //guardo el cliente nuevo en el contexto
                 _clientRepository.Save(newClient);
-                return Created("", newClient);
+
+                //busco el id del cliente recien creado para obtener el id con el que se guardo porque lo tengo que asociar al account
+                long? idNewClient = _clientRepository.GetIdClientFromEmail(newClient.Email);
+
+                if (idNewClient != null)
+                {
+                    //al cliente nuevo recien creado automaticamente le agrego una cuenta
+                    int lowerBound = 0; //numero incluido
+                    int upperBound = 100000000; //numero excliudo, maximo 8 digitos para este proyecto
+                    string newNumberAccount;
+
+                    do
+                    {
+                        newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D8");
+                    }
+                    while (_accountRepository.ExistNumberAccount(newNumberAccount));
+
+                    var newAccount = new Account
+                    {
+                        Number = newNumberAccount,
+                        CreationDate = DateTime.Now,
+                        Balance = 0,
+                        ClientId = (long)idNewClient,
+                    };
+
+                    //guardo la cuenta en el contexto
+                    _accountRepository.Save(newAccount);
+
+                    return Created("", newClient);
+                }
+                else
+                {
+                    return Forbid();
+                }
 
             }
             catch (Exception ex)
