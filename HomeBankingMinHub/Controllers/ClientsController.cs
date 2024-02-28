@@ -292,7 +292,6 @@ namespace HomeBankingMinHub.Controllers
                     do
                     {
                         newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D8");
-                        Console.WriteLine(newNumberAccount);
                     }
                     while (_accountRepository.ExistNumberAccount(newNumberAccount));
 
@@ -395,6 +394,11 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
+                if (_cardRepository.GetCountCardsByClient(client.Id) > 6)
+                {
+                    return Forbid();
+                }
+
                 CardType cardType = (CardType)Enum.Parse(typeof(CardType), simplifiedCardDTO.Type);
                 CardColor cardColor = (CardColor)Enum.Parse(typeof(CardColor), simplifiedCardDTO.Color);
 
@@ -417,7 +421,6 @@ namespace HomeBankingMinHub.Controllers
                                         + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
                                         + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
                                         ;
-                        Console.WriteLine(newNumberCard);
                     }
                     while (_cardRepository.ExistNumberCard(newNumberCard));
 

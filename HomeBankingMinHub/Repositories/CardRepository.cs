@@ -29,6 +29,12 @@ namespace HomeBankingMindHub.Repositories
                 .ToList();
         }
 
+        public int GetCountCardsByClient(long clientId)
+        {
+            return FindByCondition(card => card.ClientId == clientId)
+                .Count();
+        }
+
         public void Save(Card card)
         {
             Create(card);
