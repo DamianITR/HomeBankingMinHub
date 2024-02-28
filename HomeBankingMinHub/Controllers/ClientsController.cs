@@ -8,6 +8,7 @@ using HomeBankingMinHub.Models.DTOs;
 using HomeBankingMinHub.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -290,7 +291,7 @@ namespace HomeBankingMinHub.Controllers
                     // creo un numero de cuenta que no exista en la DB
                     do
                     {
-                        newNumberAccount = "VIN-" + GeneratorNumbers.Generate(lowerBound, upperBound);
+                        newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound);
                     }
                     while (_accountRepository.ExistNumberAccount(newNumberAccount));
 
@@ -410,10 +411,10 @@ namespace HomeBankingMinHub.Controllers
                     // creo un numero de tarjeta que no exista en la DB
                     do
                     {
-                        newNumberCard = GeneratorNumbers.Generate(lowerBound, upperBound)
-                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
-                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
-                                        + "-" + GeneratorNumbers.Generate(lowerBound, upperBound)
+                        newNumberCard = RandomNumberGenerator.GetInt32(lowerBound, upperBound)
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
                                         ;
                     }
                     while (_cardRepository.ExistNumberCard(newNumberCard));
@@ -424,7 +425,7 @@ namespace HomeBankingMinHub.Controllers
                         Type = cardType,
                         Color = cardColor,
                         Number = newNumberCard,
-                        Cvv = GeneratorNumbers.Generate(0, 1000),
+                        Cvv = RandomNumberGenerator.GetInt32(0, 1000),
                         FromDate = DateTime.Now,
                         ThruDate = DateTime.Now.AddYears(5),
                         ClientId = client.Id,
