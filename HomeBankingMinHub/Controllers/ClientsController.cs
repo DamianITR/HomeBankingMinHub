@@ -394,7 +394,7 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                if (_cardRepository.GetCountCardsByClient(client.Id) > 6)
+                if (_cardRepository.GetCountCardsByClient(client.Id) >= 6)
                 {
                     return Forbid();
                 }
