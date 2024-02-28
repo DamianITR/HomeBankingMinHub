@@ -291,7 +291,8 @@ namespace HomeBankingMinHub.Controllers
                     // creo un numero de cuenta que no exista en la DB
                     do
                     {
-                        newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound);
+                        newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D8");
+                        Console.WriteLine(newNumberAccount);
                     }
                     while (_accountRepository.ExistNumberAccount(newNumberAccount));
 
@@ -411,11 +412,12 @@ namespace HomeBankingMinHub.Controllers
                     // creo un numero de tarjeta que no exista en la DB
                     do
                     {
-                        newNumberCard = RandomNumberGenerator.GetInt32(lowerBound, upperBound)
-                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
-                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
-                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound)
+                        newNumberCard = RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
+                                        + "-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D4")
                                         ;
+                        Console.WriteLine(newNumberCard);
                     }
                     while (_cardRepository.ExistNumberCard(newNumberCard));
 
@@ -425,7 +427,7 @@ namespace HomeBankingMinHub.Controllers
                         Type = cardType,
                         Color = cardColor,
                         Number = newNumberCard,
-                        Cvv = RandomNumberGenerator.GetInt32(0, 1000),
+                        Cvv = int.Parse(RandomNumberGenerator.GetInt32(0, 1000).ToString("D3")),
                         FromDate = DateTime.Now,
                         ThruDate = DateTime.Now.AddYears(5),
                         ClientId = client.Id,
