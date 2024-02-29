@@ -1,6 +1,5 @@
 ﻿using HomeBankingMinHub.Models;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HomeBankingMinHub.Repositories
 {

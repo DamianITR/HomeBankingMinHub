@@ -82,7 +82,7 @@ namespace HomeBankingMindHub.Controllers
                 }
 
                 //Verifico que la cuenta de origen pertenezca al cliente autenticado
-                if (!_accountRepository.ClientHaveAccount(originAccount.Id , email))
+                if (!_accountRepository.ClientHaveAccount(originAccount.Id, email))
                 {
                     return StatusCode(403, "La cuenta no pertenece a un cliente autenticado");
                 }
@@ -109,7 +109,7 @@ namespace HomeBankingMindHub.Controllers
                                             Type = TransactionType.DEBIT
                                         },
                         new Transaction {   AccountId= destinationAccount.Id,
-                                            Amount = + transferDTO.Amount,
+                                            Amount = transferDTO.Amount,
                                             Date= DateTime.Now,
                                             Description = transferDTO.Description,
                                             Type = TransactionType.CREDIT
@@ -124,8 +124,8 @@ namespace HomeBankingMindHub.Controllers
                 }
 
                 //seteo los nuevos balances de cada cuenta
-                originAccount.Balance = originAccount.Balance - transferDTO.Amount;
-                destinationAccount.Balance = destinationAccount.Balance + transferDTO.Amount;
+                originAccount.Balance -= transferDTO.Amount;
+                destinationAccount.Balance += transferDTO.Amount;
 
                 //actualizo base de datos
                 _accountRepository.Save(originAccount);
