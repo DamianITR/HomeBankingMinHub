@@ -1,6 +1,5 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.Emuns;
-using HomeBankingMinHub.Models;
 
 namespace HomeBankingMindHub.Repositories
 {

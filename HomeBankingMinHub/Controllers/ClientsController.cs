@@ -409,7 +409,7 @@ namespace HomeBankingMinHub.Controllers
         [HttpPost("current/cards")]
         [Authorize(Policy = "ClientOnly")]
 
-        public IActionResult CreateCards([FromBody] SimpleCardDTO simplifiedCardDTO )
+        public IActionResult CreateCards([FromBody] SimpleCardDTO simplifiedCardDTO)
         {
             try
             {
