@@ -103,16 +103,17 @@ namespace HomeBankingMindHub.Controllers
                 //creo las dos transacciones
                 var transactions = new Transaction[]
                 {
-                        new Transaction { AccountId= originAccount.Id,
+                        new Transaction {   AccountId= originAccount.Id,
                                             Amount = - transferDTO.Amount,
                                             Date= DateTime.Now, Description = transferDTO.Description,
-                                            Type = TransactionType.DEBIT },
-
-                        new Transaction { AccountId= destinationAccount.Id,
+                                            Type = TransactionType.DEBIT
+                                        },
+                        new Transaction {   AccountId= destinationAccount.Id,
                                             Amount = + transferDTO.Amount,
                                             Date= DateTime.Now,
                                             Description = transferDTO.Description,
-                                            Type = TransactionType.CREDIT},
+                                            Type = TransactionType.CREDIT
+                                        },
                 };
 
                 //guardo transacciones
@@ -139,3 +140,4 @@ namespace HomeBankingMindHub.Controllers
             }
         }
     }
+}
