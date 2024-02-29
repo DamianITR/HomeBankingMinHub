@@ -16,6 +16,7 @@ builder.Services.AddDbContext<HomeBankingContext>(options => options
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 // Add services to the container.
 builder.Services.AddControllers();

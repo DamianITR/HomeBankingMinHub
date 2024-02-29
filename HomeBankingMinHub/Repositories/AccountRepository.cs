@@ -1,5 +1,6 @@
 ﻿using HomeBankingMinHub.Models;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HomeBankingMinHub.Repositories
 {
@@ -45,14 +46,30 @@ namespace HomeBankingMinHub.Repositories
 
         public void Save(Account account)
         {
-            Create(account);
+            if (account.Id == 0)
+            {
+                Create(account);
+            }
+            else
+            {
+                Update(account);
+            }
+
             SaveChanges();
+            RepositoryContext.ChangeTracker.Clear();
         }
 
         public bool ExistNumberAccount(string numberAccount)
         {
             return FindByCondition(account => account.Number.Equals(numberAccount))
                 .Any();
+        }
+
+        public Account FindByNumber(string numberAccount)
+        {
+            return FindByCondition(account => account.Number.ToUpper() == numberAccount.ToUpper())
+                 .Include(account => account.Transactions)
+                 .FirstOrDefault();
         }
     }
 }
