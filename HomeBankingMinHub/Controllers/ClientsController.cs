@@ -256,13 +256,11 @@ namespace HomeBankingMinHub.Controllers
                 if (idNewClient != null)
                 {
                     //al cliente nuevo recien creado automaticamente le agrego una cuenta
-                    int lowerBound = 0; //numero incluido
-                    int upperBound = 100000000; //numero excliudo, maximo 8 digitos para este proyecto
                     string newNumberAccount;
 
                     do
                     {
-                        newNumberAccount = "VIN-" + RandomNumberGenerator.GetInt32(lowerBound, upperBound).ToString("D8");
+                        newNumberAccount = GeneratorNumbers.CreateNewNumberAccount();
                     }
                     while (_accountRepository.ExistNumberAccount(newNumberAccount));
 

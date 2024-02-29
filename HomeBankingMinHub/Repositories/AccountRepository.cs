@@ -71,5 +71,11 @@ namespace HomeBankingMinHub.Repositories
                  .Include(account => account.Transactions)
                  .FirstOrDefault();
         }
+
+        public bool ClientHaveAccount(long accountId, string email)
+        {
+            return FindByCondition(account => account.Id == accountId && account.Client.Email.Equals(email))
+                .Any();
+        }
     }
 }

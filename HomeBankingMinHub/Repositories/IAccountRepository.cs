@@ -12,5 +12,6 @@ namespace HomeBankingMinHub.Repositories
         int GetCountAccountsByClient(long clientId);
         bool ExistNumberAccount(string numberAccount);
         Account FindByNumber(string numberAccount);
+        bool ClientHaveAccount(long accountId, string email);
     }
 }
