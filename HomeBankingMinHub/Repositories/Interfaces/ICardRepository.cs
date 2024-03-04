@@ -1,7 +1,7 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.Emuns;
 
-namespace HomeBankingMindHub.Repositories
+namespace HomeBankingMindHub.Repositories.Interfaces
 {
     public interface ICardRepository
     {

@@ -1,6 +1,6 @@
 ﻿using HomeBankingMinHub.Models;
 
-namespace HomeBankingMinHub.Repositories
+namespace HomeBankingMindHub.Repositories.Interfaces
 {
     public interface IAccountRepository
     {

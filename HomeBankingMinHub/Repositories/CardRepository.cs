@@ -1,5 +1,6 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.Emuns;
+using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Repositories;
 

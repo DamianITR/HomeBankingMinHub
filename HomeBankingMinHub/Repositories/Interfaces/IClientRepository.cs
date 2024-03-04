@@ -1,6 +1,6 @@
 ﻿using HomeBankingMinHub.Models;
 
-namespace HomeBankingMinHub.Repositories
+namespace HomeBankingMindHub.Repositories.Interfaces
 {
     public interface IClientRepository
     {
@@ -8,7 +8,7 @@ namespace HomeBankingMinHub.Repositories
         void Save(Client client);
         Client FindById(long id);
         Client FindByEmail(string email);
-        Boolean ExistByEmail(string email);
+        bool ExistByEmail(string email);
         long? GetIdClientFromEmail(string email);
     }
 }

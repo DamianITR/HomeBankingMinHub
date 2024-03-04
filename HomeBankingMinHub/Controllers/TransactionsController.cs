@@ -1,8 +1,7 @@
 ﻿using HomeBankingMindHub.Models.DTOs;
 using HomeBankingMindHub.Models.Emuns;
-using HomeBankingMindHub.Repositories;
+using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMinHub.Models;
-using HomeBankingMinHub.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
