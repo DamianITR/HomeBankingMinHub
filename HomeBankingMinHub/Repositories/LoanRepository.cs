@@ -22,5 +22,12 @@ namespace HomeBankingMindHub.Repositories
             return FindAll()
                 .ToList();
         }
+
+        public string[] GetAllPaymentsLoan(long id)
+        {
+            return FindByCondition(loan => loan.Id == id)
+                .Select(loan => loan.Payments)
+                .ToArray();
+        }
     }
 }
