@@ -40,7 +40,22 @@ namespace HomeBankingMindHub.Controllers
             try
             {
                 var loans = _loanRepository.GetAll();
-                return Ok(loans);
+                var newLoansDTOList = new List<LoanDTO>();
+                {
+                    foreach (var loan in loans)
+                    {
+                        var newloanDTO = new LoanDTO()
+                        {
+                            Id = loan.Id,
+                            Name = loan.Name,
+                            MaxAmount = loan.MaxAmount,
+                            Payments = loan.Payments,
+                        };
+                        newLoansDTOList.Add(newloanDTO);
+                    }
+                };
+
+                return Ok(newLoansDTOList);
             }
             catch (Exception ex)
             {
@@ -121,7 +136,7 @@ namespace HomeBankingMindHub.Controllers
                         AccountId = account.Id,
                         Amount = loanApplicationDTO.Amount,
                         Date = DateTime.Now,
-                        Description = loan.Name + " " + "loan approved",
+                        Description = loan.Name + " loan approved",
                         Type = TransactionType.CREDIT
                     };
 
