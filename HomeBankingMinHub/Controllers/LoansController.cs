@@ -83,10 +83,25 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
+                    if(loanApplicationDTO == null)
+                    {
+                        return StatusCode(403, "El loanApplicationDTO no puede ser null ");
+                    }
+
+                    if (loanApplicationDTO.LoanId <= 0)
+                    {
+                        return StatusCode(403, "El loanId no puede ser menor o igual a cero ");
+                    }
+
+                    if (loanApplicationDTO.ToAccountNumber.IsNullOrEmpty())
+                    {
+                        return StatusCode(403, "El ToAccountNumber no puede ser null o vacio");
+                    }
+
                     Loan loan = _loanRepository.FindById(loanApplicationDTO.LoanId);
                     if (loan == null)
                     {
-                        return StatusCode(403, "El LoanId no fue encontrado");
+                        return StatusCode(403, "El Loan no fue encontrado");
                     }
 
                     if (loanApplicationDTO.Amount > loan.MaxAmount || loanApplicationDTO.Amount <= 0)
@@ -94,12 +109,17 @@ namespace HomeBankingMindHub.Controllers
                         return StatusCode(403, "El Amount no pueder ser menor igual a cero o superar el maximo del prestamo");
                     }
 
+                    if (int.Parse(loanApplicationDTO.Payments) >0 || loanApplicationDTO.Payments.IsNullOrEmpty())
+                    {
+                        return StatusCode(403, "Los payments no pueden ser cero o null");
+                    }
+
                     //me traigo la lista de payments que tiene el loan especifico que estoy consultando
                     var listPayments = _loanRepository.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
                     List<int> paymentsAllowed = new List<int>();
                     if (listPayments is string && listPayments != null)
                     {
-                        string[] numbers = listPayments.Split(',');           //MEJORAR TODO ESTO
+                        string[] numbers = listPayments.Split(',');
                         foreach (string number in numbers)
                         {
                             paymentsAllowed.Add(int.Parse(number));
