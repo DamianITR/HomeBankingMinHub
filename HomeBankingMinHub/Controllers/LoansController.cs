@@ -83,7 +83,7 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
-                    if(loanApplicationDTO == null)
+                    if (loanApplicationDTO == null)
                     {
                         return StatusCode(403, "El loanApplicationDTO no puede ser null ");
                     }
@@ -109,11 +109,6 @@ namespace HomeBankingMindHub.Controllers
                         return StatusCode(403, "El Amount no pueder ser menor igual a cero o superar el maximo del prestamo");
                     }
 
-                    if (int.Parse(loanApplicationDTO.Payments) >0 || loanApplicationDTO.Payments.IsNullOrEmpty())
-                    {
-                        return StatusCode(403, "Los payments no pueden ser cero o null");
-                    }
-
                     //me traigo la lista de payments que tiene el loan especifico que estoy consultando
                     var listPayments = _loanRepository.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
                     List<int> paymentsAllowed = new List<int>();
@@ -125,9 +120,9 @@ namespace HomeBankingMindHub.Controllers
                             paymentsAllowed.Add(int.Parse(number));
                         }
                     }
-                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || !paymentsAllowed.Contains(int.Parse(loanApplicationDTO.Payments)))
+                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || int.Parse(loanApplicationDTO.Payments) == 0 || !paymentsAllowed.Contains(int.Parse(loanApplicationDTO.Payments)))
                     {
-                        return StatusCode(403, "Las cuotas no pueden ser null o tener otro valor distinto a los del prestamo");
+                        return StatusCode(403, "Las cuotas no pueden ser null, cero o tener otro valor distinto a los del prestamo");
                     }
 
                     Account account = _accountRepository.FindByNumber(loanApplicationDTO.ToAccountNumber);
