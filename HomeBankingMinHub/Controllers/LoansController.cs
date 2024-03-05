@@ -95,17 +95,17 @@ namespace HomeBankingMindHub.Controllers
                     }
 
                     //me traigo la lista de payments que tiene el loan especifico que estoy consultando
-                    string[] listPayments = _loanRepository.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
-                    List<int> auxList = new List<int>();
-                    if (listPayments[0] is string)
+                    var listPayments = _loanRepository.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
+                    List<int> paymentsAllowed = new List<int>();
+                    if (listPayments is string && listPayments != null)
                     {
-                        string[] numbers = listPayments[0].Split(',');           //MEJORAR TODO ESTO
+                        string[] numbers = listPayments.Split(',');           //MEJORAR TODO ESTO
                         foreach (string number in numbers)
                         {
-                            auxList.Add(int.Parse(number));
+                            paymentsAllowed.Add(int.Parse(number));
                         }
                     }
-                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || !auxList.Contains(int.Parse(loanApplicationDTO.Payments)))
+                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || !paymentsAllowed.Contains(int.Parse(loanApplicationDTO.Payments)))
                     {
                         return StatusCode(403, "Las cuotas no pueden ser null o tener otro valor distinto a los del prestamo");
                     }
