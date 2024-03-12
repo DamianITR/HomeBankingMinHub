@@ -1,9 +1,7 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.DTOs;
 using HomeBankingMindHub.Models.Emuns;
-using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services;
-using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -16,23 +14,19 @@ namespace HomeBankingMinHub.Controllers
     [ApiController]
     public class ClientsController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        private IAccountRepository _accountRepository;
-        private ICardRepository _cardRepository;
         private IClientService _clientService;
         private IAccountService _accountService;
+        private ICardService _cardService;
         public ClientsController
-            (IClientRepository clientRepository,
-            IAccountRepository accountRepository,
-            ICardRepository cardRepository,
+            (
             IClientService clientService,
-            IAccountService accountService)
+            IAccountService accountService,
+            ICardService cardService
+            )
         {
-            _clientRepository = clientRepository;
-            _accountRepository = accountRepository;
-            _cardRepository = cardRepository;
             _clientService = clientService;
             _accountService = accountService;
+            _cardService = cardService;
         }
 
         [HttpGet]
@@ -236,7 +230,7 @@ namespace HomeBankingMinHub.Controllers
 
                 Client client = _clientService.GetClientByEmail(email);
 
-                if (_cardRepository.GetCountCardsByClient(client.Id) >= 6)
+                if (_cardService.GetCountCardsByClient(client.Id) >= 6)
                 {
                     return Forbid();
                 }
@@ -245,35 +239,16 @@ namespace HomeBankingMinHub.Controllers
                 CardColor cardColor = (CardColor)Enum.Parse(typeof(CardColor), simplifiedCardDTO.Color);
 
 
-                if (_cardRepository.ExistSpecificCard(client.Id, cardType, cardColor))
+                if (_cardService.ExistSpecificCard(client.Id, cardType, cardColor))
                 {
                     return StatusCode(403, "Solamente podes tener una tarjeta de cada tipo");
                 }
-                else
-                {
-                    // creo un numero de tarjeta que no exista en la DB
-                    string newNumberCard;
-                    do
-                    {
-                        newNumberCard = GeneratorNumbers.CreateNewNumberCard();
-                    }
-                    while (_cardRepository.ExistNumberCard(newNumberCard));
 
-                    var newCard = new Card
-                    {
-                        CardHolder = client.FirstName + " " + client.LastName,
-                        Type = cardType,
-                        Color = cardColor,
-                        Number = newNumberCard,
-                        Cvv = GeneratorNumbers.CreateNewNumberCvv(),
-                        FromDate = DateTime.Now,
-                        ThruDate = DateTime.Now.AddYears(5),
-                        ClientId = client.Id,
-                    };
+                //creo la tarjeta
+                var newCard = _cardService.CreateCard(client, cardType, cardColor);
 
-                    _cardRepository.Save(newCard);
-                    return Created();
-                }
+                _cardService.SaveCard(newCard);
+                return Created();
             }
             catch (Exception ex)
             {
@@ -294,42 +269,23 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
+                Client client = _clientService.GetClientByEmail(email);
 
-                if (client == null)
-                {
-                    return Forbid();
-                }
-
-                var cardsClient = _cardRepository.GetCardsByClient(client.Id);
+                var cardsClient = _cardService.GetCardsByClient(client.Id);
 
                 if (cardsClient == null)
                 {
                     return Forbid();
                 }
-                else
+
+                var cardsDTOList = new List<CardDTO>();
+                foreach (Card card in cardsClient)
                 {
-                    var cardsDTOList = new List<CardDTO>();
-
-                    foreach (Card card in cardsClient)
-                    {
-                        var newCardDTO = new CardDTO
-                        {
-                            Id = card.Id,
-                            CardHolder = client.FirstName + " " + client.LastName,
-                            Type = card.Type.ToString(),
-                            Color = card.Color.ToString(),
-                            Number = card.Number,
-                            Cvv = card.Cvv,
-                            FromDate = card.FromDate,
-                            ThruDate = card.ThruDate
-                        };
-
-                        cardsDTOList.Add(newCardDTO);
-                    }
-
-                    return Ok(cardsDTOList);
+                    var newCardDTO = new CardDTO(card);
+                    cardsDTOList.Add(newCardDTO);
                 }
+
+                return Ok(cardsDTOList);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,5 @@
 ﻿using HomeBankingMindHub.Models.DTOs;
-using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services;
 using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -13,10 +13,10 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        public AuthController(IClientRepository clientRepository)
+        private IClientService _clientService;
+        public AuthController(IClientService clientService)
         {
-            _clientRepository = clientRepository;
+            _clientService = clientService;
         }
 
         [HttpPost("login")]
@@ -27,9 +27,11 @@ namespace HomeBankingMindHub.Controllers
                 //encripto la password para chequear lo que me viene del login con lo que esta guardado en la base de datos
                 String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
 
-                Client user = _clientRepository.FindByEmail(client.Email);
+                Client user = _clientService.GetClientByEmail(client.Email);
                 if (user == null || !String.Equals(user.Password, clientPasswordHashed))
+                {
                     return Unauthorized();
+                }
 
                 var claims = new List<Claim>
                 {
