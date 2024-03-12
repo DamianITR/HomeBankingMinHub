@@ -2,6 +2,7 @@
 using HomeBankingMindHub.Models.DTOs;
 using HomeBankingMindHub.Models.Emuns;
 using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services;
 using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
@@ -17,11 +18,17 @@ namespace HomeBankingMinHub.Controllers
         private IClientRepository _clientRepository;
         private IAccountRepository _accountRepository;
         private ICardRepository _cardRepository;
-        public ClientsController(IClientRepository clientRepository, IAccountRepository accountRepository, ICardRepository cardRepository)
+        private IClientService _clientService;
+        public ClientsController
+            (IClientRepository clientRepository,
+            IAccountRepository accountRepository,
+            ICardRepository cardRepository,
+            IClientService clientService)
         {
             _clientRepository = clientRepository;
             _accountRepository = accountRepository;
             _cardRepository = cardRepository;
+            _clientService = clientService;
         }
 
         [HttpGet]
@@ -30,49 +37,7 @@ namespace HomeBankingMinHub.Controllers
         {
             try
             {
-                var clients = _clientRepository.GetAllClients();
-                var clientsDTO = new List<ClientDTO>();
-
-                foreach (Client client in clients)
-                {
-                    var newClientDTO = new ClientDTO
-                    {
-                        Id = client.Id,
-                        Email = client.Email,
-                        FirstName = client.FirstName,
-                        LastName = client.LastName,
-                        Accounts = client.Accounts.Select(ac => new AccountDTO
-                        {
-                            Id = ac.Id,
-                            Balance = ac.Balance,
-                            CreationDate = ac.CreationDate,
-                            Number = ac.Number
-                        }).ToList(),
-                        Credits = client.ClientLoans.Select(cl => new ClientLoanDTO
-                        {
-                            Id = cl.Id,
-                            LoanId = cl.LoanId,
-                            Name = cl.Loan.Name,
-                            Amount = cl.Amount,
-                            Payments = int.Parse(cl.Payments)
-                        }).ToList(),
-                        Cards = client.Cards.Select(c => new CardDTO
-                        {
-                            Id = c.Id,
-                            CardHolder = c.CardHolder,
-                            Color = c.Color.ToString(),
-                            Cvv = c.Cvv,
-                            FromDate = c.FromDate,
-                            Number = c.Number,
-                            ThruDate = c.ThruDate,
-                            Type = c.Type.ToString()
-                        }).ToList()
-                    };
-
-                    clientsDTO.Add(newClientDTO);
-                }
-
-                return Ok(clientsDTO);
+                return Ok(_clientService.GetAllClientsDTO());
             }
             catch (Exception ex)
             {
@@ -86,47 +51,7 @@ namespace HomeBankingMinHub.Controllers
         {
             try
             {
-                var client = _clientRepository.FindById(id);
-                if (client == null)
-                {
-                    return Forbid();
-                }
-
-                var clientDTO = new ClientDTO
-                {
-                    Id = client.Id,
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Accounts = client.Accounts.Select(ac => new AccountDTO
-                    {
-                        Id = ac.Id,
-                        Balance = ac.Balance,
-                        CreationDate = ac.CreationDate,
-                        Number = ac.Number
-                    }).ToList(),
-                    Credits = client.ClientLoans.Select(cl => new ClientLoanDTO
-                    {
-                        Id = cl.Id,
-                        LoanId = cl.LoanId,
-                        Name = cl.Loan.Name,
-                        Amount = cl.Amount,
-                        Payments = int.Parse(cl.Payments)
-                    }).ToList(),
-                    Cards = client.Cards.Select(c => new CardDTO
-                    {
-                        Id = c.Id,
-                        CardHolder = c.CardHolder,
-                        Color = c.Color.ToString(),
-                        Cvv = c.Cvv,
-                        FromDate = c.FromDate,
-                        Number = c.Number,
-                        ThruDate = c.ThruDate,
-                        Type = c.Type.ToString()
-                    }).ToList()
-                };
-
-                return Ok(clientDTO);
+                return Ok(_clientService.GetClientDTOById(id));
             }
             catch (Exception ex)
             {
