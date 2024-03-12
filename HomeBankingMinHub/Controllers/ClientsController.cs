@@ -8,6 +8,7 @@ using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Transactions;
 
 namespace HomeBankingMinHub.Controllers
 {
@@ -19,16 +20,19 @@ namespace HomeBankingMinHub.Controllers
         private IAccountRepository _accountRepository;
         private ICardRepository _cardRepository;
         private IClientService _clientService;
+        private IAccountService _accountService;
         public ClientsController
             (IClientRepository clientRepository,
             IAccountRepository accountRepository,
             ICardRepository cardRepository,
-            IClientService clientService)
+            IClientService clientService,
+            IAccountService accountService)
         {
             _clientRepository = clientRepository;
             _accountRepository = accountRepository;
             _cardRepository = cardRepository;
             _clientService = clientService;
+            _accountService = accountService;
         }
 
         [HttpGet]
@@ -71,48 +75,7 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
-
-                if (client == null)
-                {
-                    return Forbid();
-                }
-
-                var clientDTO = new ClientDTO
-                {
-                    Id = client.Id,
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Accounts = client.Accounts.Select(ac => new AccountDTO
-                    {
-                        Id = ac.Id,
-                        Balance = ac.Balance,
-                        CreationDate = ac.CreationDate,
-                        Number = ac.Number
-                    }).ToList(),
-                    Credits = client.ClientLoans.Select(cl => new ClientLoanDTO
-                    {
-                        Id = cl.Id,
-                        LoanId = cl.LoanId,
-                        Name = cl.Loan.Name,
-                        Amount = cl.Amount,
-                        Payments = int.Parse(cl.Payments)
-                    }).ToList(),
-                    Cards = client.Cards.Select(c => new CardDTO
-                    {
-                        Id = c.Id,
-                        CardHolder = c.CardHolder,
-                        Color = c.Color.ToString(),
-                        Cvv = c.Cvv,
-                        FromDate = c.FromDate,
-                        Number = c.Number,
-                        ThruDate = c.ThruDate,
-                        Type = c.Type.ToString(),
-                    }).ToList()
-                };
-
-                return Ok(clientDTO);
+                return Ok(_clientService.GetClientDTOByEmail(email));
             }
             catch (Exception ex)
             {
@@ -123,92 +86,68 @@ namespace HomeBankingMinHub.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Client client)
         {
-            try
+            using (var scope = new TransactionScope())
             {
-                //validamos datos antes
-                // Email
-                if (String.IsNullOrEmpty(client.Email))
+                try
                 {
-                    return StatusCode(403, "El correo electrónico no puede estar vacío.");
-                }
-
-                // Contraseña
-                if (String.IsNullOrEmpty(client.Password))
-                {
-                    return StatusCode(403, "La contraseña no puede estar vacía.");
-                }
-
-                // Nombre
-                if (String.IsNullOrEmpty(client.FirstName))
-                {
-                    return StatusCode(403, "El nombre no puede estar vacío.");
-                }
-
-                // Apellido
-                if (String.IsNullOrEmpty(client.LastName))
-                {
-                    return StatusCode(403, "El apellido no puede estar vacío.");
-                }
-
-                //buscamos si ya existe el usuario
-                //Client user = _clientRepository.FindByEmail(client.Email);
-
-                if (_clientRepository.ExistByEmail(client.Email))
-                {
-                    return StatusCode(403, "Email está en uso");
-                }
-
-                //encripto la password
-                String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
-
-                //se crea el cliente nuevo
-                Client newClient = new Client
-                {
-                    Email = client.Email,
-                    Password = clientPasswordHashed,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                };
-
-                //guardo el cliente nuevo en el contexto
-                _clientRepository.Save(newClient);
-
-                //busco el id del cliente recien creado para obtener el id con el que se guardo porque lo tengo que asociar al account
-                long? idNewClient = _clientRepository.GetIdClientFromEmail(newClient.Email);
-
-                if (idNewClient != null)
-                {
-                    //al cliente nuevo recien creado automaticamente le agrego una cuenta
-                    string newNumberAccount;
-
-                    do
+                    //validamos datos antes
+                    // Email
+                    if (String.IsNullOrEmpty(client.Email))
                     {
-                        newNumberAccount = GeneratorNumbers.CreateNewNumberAccount();
+                        return StatusCode(403, "El correo electrónico no puede estar vacío.");
                     }
-                    while (_accountRepository.ExistNumberAccount(newNumberAccount));
 
-                    var newAccount = new Account
+                    // Contraseña
+                    if (String.IsNullOrEmpty(client.Password))
                     {
-                        Number = newNumberAccount,
-                        CreationDate = DateTime.Now,
-                        Balance = 0,
-                        ClientId = (long)idNewClient,
-                    };
+                        return StatusCode(403, "La contraseña no puede estar vacía.");
+                    }
+
+                    // Nombre
+                    if (String.IsNullOrEmpty(client.FirstName))
+                    {
+                        return StatusCode(403, "El nombre no puede estar vacío.");
+                    }
+
+                    // Apellido
+                    if (String.IsNullOrEmpty(client.LastName))
+                    {
+                        return StatusCode(403, "El apellido no puede estar vacío.");
+                    }
+
+                    //buscamos si ya existe el usuario
+                    //Client user = _clientRepository.FindByEmail(client.Email);
+
+                    if (_clientService.ExistClientByEmail(client.Email))
+                    {
+                        return StatusCode(403, "Email está en uso");
+                    }
+
+                    //se crea el cliente nuevo
+                    var newClient = _clientService.CreateClient(client);
+
+                    //guardo el cliente nuevo en el contexto
+                    _clientService.SaveClient(newClient);
+
+                    //busco el id del cliente recien creado para obtener el id con el que se guardo porque lo tengo que asociar al account
+                    long? idNewClient = _clientService.GetIdNewClientFromEmail(newClient.Email);
+
+                    //al cliente nuevo recien creado automaticamente le agrego una cuenta
+                    string newNumberAccount = _accountService.CreateNewNumberAccount();
+                    Account newAccount = _accountService.CreateAccountWithIdClientAndAccountNumber(idNewClient, newNumberAccount);
 
                     //guardo la cuenta en el contexto
-                    _accountRepository.Save(newAccount);
+                    _accountService.SaveAccount(newAccount);
 
-                    return Created("", newClient);
+                    scope.Complete();
+
+                    return Created("Cliente creado", newClient);
+
                 }
-                else
+                catch (Exception ex)
                 {
-                    return Forbid();
+                    return StatusCode(500, ex.Message);
                 }
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
             }
         }
 
@@ -225,40 +164,20 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
+                Client client = _clientService.GetClientByEmail(email);
 
-                if (client == null)
-                {
-                    return Forbid();
-                }
+                //si tiene mas de 3 cuantas lanzo una exception
+                _accountService.GetCountAccountsByClient(client.Id);
 
-                var totalAccounts = _accountRepository.GetCountAccountsByClient(client.Id);
+                // creo un numero de cuenta que no exista en la DB
+                string newNumberAccount = _accountService.CreateNewNumberAccount();
 
-                if (totalAccounts >= 3)
-                {
-                    return Forbid();
-                }
-                else
-                {
-                    // creo un numero de cuenta que no exista en la DB
-                    string newNumberAccount;
-                    do
-                    {
-                        newNumberAccount = GeneratorNumbers.CreateNewNumberAccount();
-                    }
-                    while (_accountRepository.ExistNumberAccount(newNumberAccount));
+                Account newAccount = _accountService.CreateAccountWithIdClientAndAccountNumber(client.Id, newNumberAccount);
 
-                    var newAccount = new Account
-                    {
-                        Number = newNumberAccount,
-                        CreationDate = DateTime.Now,
-                        Balance = 0,
-                        ClientId = client.Id,
-                    };
+                _accountService.SaveAccount(newAccount);
 
-                    _accountRepository.Save(newAccount);
-                    return Created();
-                }
+                return Created("Cuenta creada", newAccount);
+
             }
             catch (Exception ex)
             {
@@ -280,46 +199,21 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
+                Client client = _clientService.GetClientByEmail(email);
 
-                if (client == null)
+                IEnumerable<Account> accountsClient = _accountService.GetAccountsByClient(client.Id);
+
+                //transformo los accounts a accountsDTO
+                List<AccountDTO> accountsDTO = new List<AccountDTO>();
+
+                foreach (Account account in accountsClient)
                 {
-                    return Forbid();
+                    AccountDTO newAccountDTO = new AccountDTO(account);
+
+                    accountsDTO.Add(newAccountDTO);
                 }
 
-                var accountsClient = _accountRepository.GetAccountsByClient(client.Id);
-
-                if (accountsClient == null)
-                {
-                    return Forbid();
-                }
-                else
-                {
-                    var accountsDTO = new List<AccountDTO>();
-
-                    foreach (Account account in accountsClient)
-                    {
-                        var newAccountDTO = new AccountDTO
-                        {
-                            Id = account.Id,
-                            Number = account.Number,
-                            CreationDate = account.CreationDate,
-                            Balance = account.Balance,
-                            Transactions = account.Transactions.Select(transaction => new TransactionDTO
-                            {
-                                Id = transaction.Id,
-                                Type = transaction.Type.ToString(),
-                                Amount = transaction.Amount,
-                                Description = transaction.Description,
-                                Date = transaction.Date
-                            }).ToList()
-                        };
-
-                        accountsDTO.Add(newAccountDTO);
-                    }
-
-                    return Ok(accountsDTO);
-                }
+                return Ok(accountsDTO);
             }
             catch (Exception ex)
             {
@@ -340,12 +234,7 @@ namespace HomeBankingMinHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
-
-                if (client == null)
-                {
-                    return Forbid();
-                }
+                Client client = _clientService.GetClientByEmail(email);
 
                 if (_cardRepository.GetCountCardsByClient(client.Id) >= 6)
                 {

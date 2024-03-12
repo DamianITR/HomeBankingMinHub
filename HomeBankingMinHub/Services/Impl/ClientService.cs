@@ -1,7 +1,7 @@
 ﻿using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Shared;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace HomeBankingMindHub.Services.Impl
 {
@@ -12,6 +12,27 @@ namespace HomeBankingMindHub.Services.Impl
         public ClientService(IClientRepository clientRepository)
         {
             _clientRepository = clientRepository;
+        }
+
+        public Client CreateClient(Client client)
+        {
+            //encripto la password
+            String clientPasswordHashed = Encryptor.EncryptPassword(client.Password);
+
+            Client newClient = new Client
+            {
+                Email = client.Email,
+                Password = clientPasswordHashed,
+                FirstName = client.FirstName,
+                LastName = client.LastName,
+            };
+
+            return newClient;
+        }
+
+        public bool ExistClientByEmail(string email)
+        {
+            return _clientRepository.ExistByEmail(email);
         }
 
         public IEnumerable<Client> GetAllClients()
@@ -48,7 +69,7 @@ namespace HomeBankingMindHub.Services.Impl
             Client client = GetClientByEmail(email);
             if (client == null)
             {
-                throw new Exception();
+                throw new Exception("No se encontro al cliente");
             }
 
             return new ClientDTO(client);
@@ -59,10 +80,25 @@ namespace HomeBankingMindHub.Services.Impl
             Client client = GetClientById(id);
             if (client == null)
             {
-                throw new Exception();
+                throw new Exception("No se encontro al cliente");
             }
 
             return new ClientDTO(client);
+        }
+
+        public long? GetIdNewClientFromEmail(string clientEmail)
+        {
+            long? id = _clientRepository.GetIdClientFromEmail(clientEmail);
+            if (id == null)
+            {
+                throw new Exception($"No existe cliente con mail: {clientEmail}");
+            }
+            return id;
+        }
+
+        public void SaveClient(Client client)
+        {
+            _clientRepository.Save(client);
         }
     }
 }

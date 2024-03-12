@@ -26,7 +26,7 @@ builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 
 //servicios
 builder.Services.AddScoped<IClientService, ClientService>();
-
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // Add services to the container.
 builder.Services.AddControllers();
