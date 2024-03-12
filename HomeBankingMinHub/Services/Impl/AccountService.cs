@@ -38,6 +38,11 @@ namespace HomeBankingMindHub.Services.Impl
             return newNumberAccount;
         }
 
+        public Account FindByIdAndEmail(long id, string email)
+        {
+            return _accountRepository.FindByIdAndClientEmail(id, email);
+        }
+
         public IEnumerable<Account> GetAccountsByClient(long idClient)
         {
             var accountsList = _accountRepository.GetAccountsByClient(idClient);
@@ -47,6 +52,11 @@ namespace HomeBankingMindHub.Services.Impl
             }
 
             return accountsList;
+        }
+
+        public IEnumerable<Account> GetAllAccounts()
+        {
+            return _accountRepository.GetAllAccounts();
         }
 
         public int GetCountAccountsByClient(long idClient)

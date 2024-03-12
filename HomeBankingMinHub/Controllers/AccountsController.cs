@@ -1,4 +1,4 @@
-﻿using HomeBankingMindHub.Repositories.Interfaces;
+﻿using HomeBankingMindHub.Services;
 using HomeBankingMinHub.Models;
 using HomeBankingMinHub.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -10,11 +10,11 @@ namespace HomeBankingMinHub.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        private IAccountRepository _accountRepository;
+        private IAccountService _accountService;
 
-        public AccountsController(IAccountRepository accountRepository)
+        public AccountsController(IAccountService accountService)
         {
-            _accountRepository = accountRepository;
+            _accountService = accountService;
         }
 
         [HttpGet]
@@ -23,27 +23,12 @@ namespace HomeBankingMinHub.Controllers
         {
             try
             {
-                var accounts = _accountRepository.GetAllAccounts();
+                var accounts = _accountService.GetAllAccounts();
                 var accountsDTO = new List<AccountDTO>();
 
                 foreach (Account account in accounts)
                 {
-                    var newAccountDTO = new AccountDTO
-                    {
-                        Id = account.Id,
-                        Number = account.Number,
-                        CreationDate = account.CreationDate,
-                        Balance = account.Balance,
-                        Transactions = account.Transactions.Select(transaction => new TransactionDTO
-                        {
-                            Id = transaction.Id,
-                            Type = transaction.Type.ToString(),
-                            Amount = transaction.Amount,
-                            Description = transaction.Description,
-                            Date = transaction.Date
-                        }).ToList()
-                    };
-
+                    var newAccountDTO = new AccountDTO(account);
                     accountsDTO.Add(newAccountDTO);
                 }
 
@@ -64,30 +49,14 @@ namespace HomeBankingMinHub.Controllers
                 string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
 
                 //busco la cuenta por id y el email que tengo en la cookie
-                Account account = _accountRepository.FindByIdAndClientEmail(id, email);
+                Account account = _accountService.FindByIdAndEmail(id, email);
 
                 if (account == null)
                 {
                     return Forbid();
                 }
 
-                var newAccountDTO = new AccountDTO
-                {
-                    Id = account.Id,
-                    Number = account.Number,
-                    CreationDate = account.CreationDate,
-                    Balance = account.Balance,
-                    Transactions = account.Transactions.Select(transaction => new TransactionDTO
-                    {
-                        Id = transaction.Id,
-                        Type = transaction.Type.ToString(),
-                        Amount = transaction.Amount,
-                        Description = transaction.Description,
-                        Date = transaction.Date
-                    }).ToList()
-                };
-
-                return Ok(newAccountDTO);
+                return Ok(new AccountDTO(account));
             }
             catch (Exception ex)
             {

@@ -9,5 +9,7 @@ namespace HomeBankingMindHub.Services
         Account CreateAccountWithIdClientAndAccountNumber(long? idClient, string accountNumber);
         int GetCountAccountsByClient(long idClient);
         IEnumerable<Account> GetAccountsByClient(long idClient);
+        IEnumerable<Account> GetAllAccounts();
+        Account FindByIdAndEmail(long id, string email);
     }
 }

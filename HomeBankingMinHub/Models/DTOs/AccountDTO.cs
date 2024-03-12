@@ -23,6 +23,7 @@
             Number = account.Number;
             CreationDate = account.CreationDate;
             Balance = account.Balance;
+            Transactions = account.Transactions.Select(transaction => new TransactionDTO(transaction)).ToList();
         }
 
     }
