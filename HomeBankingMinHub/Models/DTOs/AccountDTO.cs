@@ -1,4 +1,6 @@
-﻿namespace HomeBankingMinHub.Models.DTOs
+﻿using Microsoft.IdentityModel.Tokens;
+
+namespace HomeBankingMinHub.Models.DTOs
 {
     public class AccountDTO
     {
@@ -23,7 +25,7 @@
             Number = account.Number;
             CreationDate = account.CreationDate;
             Balance = account.Balance;
-            Transactions = account.Transactions.Select(transaction => new TransactionDTO(transaction)).ToList();
+            Transactions = account.Transactions.IsNullOrEmpty() ? new List<TransactionDTO>() : account.Transactions.Select(transaction => new TransactionDTO(transaction)).ToList();
         }
 
     }
