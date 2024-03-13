@@ -25,7 +25,7 @@ namespace HomeBankingMinHub.Models.DTOs
             Number = account.Number;
             CreationDate = account.CreationDate;
             Balance = account.Balance;
-            Transactions = account.Transactions.IsNullOrEmpty() ? new List<TransactionDTO>() : account.Transactions.Select(transaction => new TransactionDTO(transaction)).ToList();
+            Transactions = account.Transactions?.Select(transaction => new TransactionDTO(transaction)).ToList();
         }
 
     }
