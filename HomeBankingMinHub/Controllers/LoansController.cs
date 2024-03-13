@@ -1,7 +1,6 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.DTOs;
-using HomeBankingMindHub.Models.Emuns;
-using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services;
 using HomeBankingMinHub.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,23 +14,26 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class LoansController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        private IAccountRepository _accountRepository;
-        private ILoanRepository _loanRepository;
-        private IClientLoanRepository _clientLoanRepository;
-        private ITransactionRepository _transactionRepository;
+        private ILoanService _loanService;
+        private IClientService _clientService;
+        private IAccountService _accountService;
+        private IClientLoanService _clientLoanService;
+        private ITransactionService _transactionService;
 
-        public LoansController(IClientRepository clientRepository,
-            IAccountRepository accountRepository,
-            ILoanRepository loanRepository,
-            IClientLoanRepository clientLoanRepository,
-            ITransactionRepository transactionRepository)
+        public LoansController
+            (
+            ILoanService loanService,
+            IClientService clientService,
+            IAccountService accountService,
+            IClientLoanService clientLoanService,
+            ITransactionService transactionService
+            )
         {
-            _clientRepository = clientRepository;
-            _accountRepository = accountRepository;
-            _loanRepository = loanRepository;
-            _clientLoanRepository = clientLoanRepository;
-            _transactionRepository = transactionRepository;
+            _loanService = loanService;
+            _clientService = clientService;
+            _accountService = accountService;
+            _clientLoanService = clientLoanService;
+            _transactionService = transactionService;
         }
 
         [HttpGet]
@@ -39,18 +41,12 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var loans = _loanRepository.GetAll();
+                var loans = _loanService.GetAll();
                 var newLoansDTOList = new List<LoanDTO>();
                 {
                     foreach (var loan in loans)
                     {
-                        var newloanDTO = new LoanDTO()
-                        {
-                            Id = loan.Id,
-                            Name = loan.Name,
-                            MaxAmount = loan.MaxAmount,
-                            Payments = loan.Payments,
-                        };
+                        var newloanDTO = new LoanDTO(loan);
                         newLoansDTOList.Add(newloanDTO);
                     }
                 };
@@ -77,7 +73,7 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
-                    Client client = _clientRepository.FindByEmail(email);
+                    Client client = _clientService.GetClientByEmail(email);
                     if (client == null)
                     {
                         return Forbid();
@@ -98,7 +94,7 @@ namespace HomeBankingMindHub.Controllers
                         return StatusCode(403, "El ToAccountNumber no puede ser null o vacio");
                     }
 
-                    Loan loan = _loanRepository.FindById(loanApplicationDTO.LoanId);
+                    Loan loan = _loanService.FindLoanById(loanApplicationDTO.LoanId);
                     if (loan == null)
                     {
                         return StatusCode(403, "El Loan no fue encontrado");
@@ -110,55 +106,34 @@ namespace HomeBankingMindHub.Controllers
                     }
 
                     //me traigo la lista de payments que tiene el loan especifico que estoy consultando
-                    var listPayments = _loanRepository.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
-                    List<int> paymentsAllowed = new List<int>();
-                    if (listPayments is string && listPayments != null)
-                    {
-                        string[] numbers = listPayments.Split(',');
-                        foreach (string number in numbers)
-                        {
-                            paymentsAllowed.Add(int.Parse(number));
-                        }
-                    }
-                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || int.Parse(loanApplicationDTO.Payments) == 0 || !paymentsAllowed.Contains(int.Parse(loanApplicationDTO.Payments)))
+                    List<string> listPayments = _loanService.GetAllPaymentsLoan(loanApplicationDTO.LoanId);
+
+                    if (loanApplicationDTO.Payments.IsNullOrEmpty() || int.Parse(loanApplicationDTO.Payments) == 0 || !listPayments.Contains(loanApplicationDTO.Payments))
                     {
                         return StatusCode(403, "Las cuotas no pueden ser null, cero o tener otro valor distinto a los del prestamo");
                     }
 
-                    Account account = _accountRepository.FindByNumber(loanApplicationDTO.ToAccountNumber);
+                    Account account = _accountService.FindByNumber(loanApplicationDTO.ToAccountNumber);
                     if (account == null)
                     {
                         return StatusCode(403, "La cuenta destino no existe");
                     }
 
-                    if (_accountRepository.ClientHaveAccount(client.Id, email))
+                    if (_accountService.ClientHaveAccount(client.Id, email))
                     {
                         return StatusCode(403, "Al usuario logueado no le pertenece esa cuenta");
                     }
 
-                    var newClientLoan = new ClientLoan
-                    {
-                        Amount = loanApplicationDTO.Amount * 1.2,
-                        ClientId = client.Id,
-                        LoanId = loan.Id,
-                        Payments = loanApplicationDTO.Payments
-                    };
+                    ClientLoan newClientLoan = _clientLoanService.CreateClientLoan(loanApplicationDTO.Amount, client.Id, loan.Id, loanApplicationDTO.Payments);
 
-                    _clientLoanRepository.Save(newClientLoan);
+                    _clientLoanService.SaveClientLoan(newClientLoan);
 
-                    var newTransacciont = new Transaction
-                    {
-                        AccountId = account.Id,
-                        Amount = loanApplicationDTO.Amount,
-                        Date = DateTime.Now,
-                        Description = loan.Name + " loan approved",
-                        Type = TransactionType.CREDIT
-                    };
+                    Transaction newTransacciont = _transactionService.CreateTransaction(account.Id, loanApplicationDTO.Amount, loan.Name);
 
-                    _transactionRepository.Save(newTransacciont);
+                    _transactionService.SaveTransaction(newTransacciont);
 
                     account.Balance += loanApplicationDTO.Amount;
-                    _accountRepository.Save(account);
+                    _accountService.SaveAccount(account);
 
                     scope.Complete();
                     return Ok();
@@ -169,7 +144,6 @@ namespace HomeBankingMindHub.Controllers
                 }
             }
         }
-
 
     }
 }

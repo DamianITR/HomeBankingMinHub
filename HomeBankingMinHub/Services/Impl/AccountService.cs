@@ -13,6 +13,11 @@ namespace HomeBankingMindHub.Services.Impl
             _accountRepository = accountRepository;
         }
 
+        public bool ClientHaveAccount(long idClient, string email)
+        {
+            return _accountRepository.ClientHaveAccount(idClient, email);
+        }
+
         public Account CreateAccountWithIdClientAndAccountNumber(long? idClient, string accountNumber)
         {
             var newAccount = new Account
@@ -41,6 +46,11 @@ namespace HomeBankingMindHub.Services.Impl
         public Account FindByIdAndEmail(long id, string email)
         {
             return _accountRepository.FindByIdAndClientEmail(id, email);
+        }
+
+        public Account FindByNumber(string accountNumber)
+        {
+            return _accountRepository.FindByNumber(accountNumber);
         }
 
         public IEnumerable<Account> GetAccountsByClient(long idClient)
