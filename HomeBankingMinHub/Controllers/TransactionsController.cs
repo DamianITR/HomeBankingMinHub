@@ -1,6 +1,6 @@
 ﻿using HomeBankingMindHub.Models.DTOs;
 using HomeBankingMindHub.Models.Emuns;
-using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services;
 using HomeBankingMinHub.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +14,19 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class TransactionsController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        private IAccountRepository _accountRepository;
-        private ITransactionRepository _transactionRepository;
+        private IClientService _clientService;
+        private IAccountService _accountService;
+        private ITransactionService _transactionService;
 
-        public TransactionsController(IClientRepository clientRepository, IAccountRepository accountRepository, ITransactionRepository transactionRepository)
+        public TransactionsController
+            (
+            IClientService clientService,
+            IAccountService accountService,
+            ITransactionService transactionService)
         {
-            _clientRepository = clientRepository;
-            _accountRepository = accountRepository;
-            _transactionRepository = transactionRepository;
+            _clientService = clientService;
+            _accountService = accountService;
+            _transactionService = transactionService;
         }
 
         [HttpPost()]
@@ -39,7 +43,7 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
-                    Client client = _clientRepository.FindByEmail(email);
+                    Client client = _clientService.GetClientByEmail(email);
 
                     if (client == null)
                     {
@@ -78,20 +82,20 @@ namespace HomeBankingMindHub.Controllers
                     }
 
                     //Verifico que exista la cuenta de origen
-                    Account originAccount = _accountRepository.FindByNumber(transferDTO.FromAccountNumber);
+                    Account originAccount = _accountService.FindByNumber(transferDTO.FromAccountNumber);
                     if (originAccount == null)
                     {
                         return StatusCode(403, "No existe la cuenta de origen");
                     }
 
                     //Verifico que la cuenta de origen pertenezca al cliente autenticado
-                    if (!_accountRepository.ClientHaveAccount(originAccount.Id, email))
+                    if (!_accountService.ClientHaveAccount(originAccount.Id, email))
                     {
                         return StatusCode(403, "La cuenta no pertenece a un cliente autenticado");
                     }
 
                     //Verifico que exista la cuenta de destino
-                    Account destinationAccount = _accountRepository.FindByNumber(transferDTO.ToAccountNumber);
+                    Account destinationAccount = _accountService.FindByNumber(transferDTO.ToAccountNumber);
                     if (destinationAccount == null)
                     {
                         return StatusCode(403, "No existe la cuenta destino");
@@ -108,7 +112,8 @@ namespace HomeBankingMindHub.Controllers
                     {
                         new Transaction {   AccountId= originAccount.Id,
                                             Amount = - transferDTO.Amount,
-                                            Date= DateTime.Now, Description = transferDTO.Description,
+                                            Date= DateTime.Now,
+                                            Description = transferDTO.Description,
                                             Type = TransactionType.DEBIT
                                         },
                         new Transaction {   AccountId= destinationAccount.Id,
@@ -122,7 +127,7 @@ namespace HomeBankingMindHub.Controllers
                     //guardo transacciones
                     foreach (var transaction in transactions)
                     {
-                        _transactionRepository.Save(transaction);
+                        _transactionService.SaveTransaction(transaction);
                     }
 
                     //seteo los nuevos balances de cada cuenta
@@ -130,8 +135,8 @@ namespace HomeBankingMindHub.Controllers
                     destinationAccount.Balance += transferDTO.Amount;
 
                     //actualizo base de datos
-                    _accountRepository.Save(originAccount);
-                    _accountRepository.Save(destinationAccount);
+                    _accountService.SaveAccount(originAccount);
+                    _accountService.SaveAccount(destinationAccount);
 
                     //esta linea se encargar de hacer el commit en la BD sin que nada falle antes sino hace el Rollback
                     scope.Complete();

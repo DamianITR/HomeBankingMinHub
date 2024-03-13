@@ -30,6 +30,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<IClientLoanService, ClientLoanService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 // Add services to the container.
 builder.Services.AddControllers();
